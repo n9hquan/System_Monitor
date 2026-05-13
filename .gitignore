@@ -1,0 +1,6 @@
+mem/test_mem.c
+mem/test_mem.exe
+mem/test_mem
+*.exe
+*.o
+*.out
