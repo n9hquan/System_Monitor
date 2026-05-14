@@ -43,7 +43,6 @@ static int read_proc_stat(int pid, char *name, size_t name_sz, unsigned long lon
     char state;
     int dummy_i;
     unsigned long dummy_lu;
-    long dummy_ld;
 
     int n = sscanf(close + 2,
         "%c %d %d %d %d %d %lu %lu %lu %lu %llu %llu",
@@ -79,8 +78,12 @@ static unsigned long long read_total_jiffies(void)
     FILE *f = fopen("/proc/stat", "r");
     if (!f) return 0;
     unsigned long long v[10] = {0};
-    fscanf(f, "cpu  %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
-           &v[0],&v[1],&v[2],&v[3],&v[4],&v[5],&v[6],&v[7],&v[8],&v[9]);
+    if (fscanf(f, "cpu  %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
+               &v[0], &v[1], &v[2], &v[3], &v[4],
+               &v[5], &v[6], &v[7], &v[8], &v[9]) < 4) {
+        fclose(f);
+        return 0;
+    }
     fclose(f);
     unsigned long long total = 0;
     for (int i = 0; i < 10; i++) total += v[i];
@@ -91,7 +94,19 @@ static unsigned long long lookup_prev_cpu(int pid)
 {
     for (int i = 0; i < prev_count; i++)
         if (prev_samples[i].pid == pid) return prev_samples[i].prev_cpu;
-    return 0;   
+    return 0;
+}
+
+static int compare_proc_info(const void *left, const void *right)
+{
+    const ProcInfo *a = left;
+    const ProcInfo *b = right;
+
+    if (b->cpu_percent > a->cpu_percent) return 1;
+    if (b->cpu_percent < a->cpu_percent) return -1;
+    if (b->mem_mb > a->mem_mb) return 1;
+    if (b->mem_mb < a->mem_mb) return -1;
+    return a->pid - b->pid;
 }
 
 void proc_init(void)
@@ -106,7 +121,7 @@ int proc_read_all(ProcInfo *out, int max)
 {
     unsigned long long total_now   = read_total_jiffies();
     unsigned long long total_delta = total_now - prev_total_jiffies;
-    if (total_delta == 0) total_delta = 1;   
+    if (total_delta == 0) total_delta = 1;
 
     DIR *d = opendir("/proc");
     if (!d) return 0;
@@ -146,6 +161,7 @@ int proc_read_all(ProcInfo *out, int max)
     memcpy(prev_samples, new_samples, sizeof(PrevSample) * new_count);
     prev_count          = new_count;
     prev_total_jiffies  = total_now;
+    qsort(out, out_count, sizeof(ProcInfo), compare_proc_info);
 
     return out_count;
 }
