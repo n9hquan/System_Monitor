@@ -1,4 +1,4 @@
-# System_Monitor
+# System Monitor
 
 A terminal-based system monitor that is inspired by `top`, written in C.
 
@@ -42,6 +42,6 @@ Stop with `Ctrl+C`. Clean build files with `make clean`.
 
 ## How It Works
 
-Reads system information directly from the Linux `/proc` virtual filesystem using only standard C libraries (`stdio.h`, `stdlib.h`, `string.h`, `dirent.h`, `unistd.h`).
+Reads system information directly from the Linux `/proc` virtual filesystem.
 
 The main loop refreshes every 1 second and displays the top 20 processes.
