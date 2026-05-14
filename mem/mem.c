@@ -16,8 +16,14 @@ void mem_read(MemInfo *out)
     int  found = 0;
 
     while (fgets(line, sizeof line, f) && found < 2) {
-        if (sscanf(line, "MemTotal: %ld kB", &total_kb) == 1) found++;
-        else if (sscanf(line, "MemAvailable: %ld kB", &available_kb) == 1) found++;
+        if (sscanf(line, "MemTotal: %ld kB", &total_kb) == 1) 
+        {
+            found++;
+        }
+        else if (sscanf(line, "MemAvailable: %ld kB", &available_kb) == 1) 
+        {
+            found++;
+        }
     }
     fclose(f);
 
