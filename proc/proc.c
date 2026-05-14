@@ -9,17 +9,16 @@
 #define MAX_PROCS 1024
 
 typedef struct {
-    int                pid;
+    int pid;
     unsigned long long prev_cpu;
 } PrevSample;
 
-static PrevSample         prev_samples[MAX_PROCS];
-static int                prev_count = 0;
+static PrevSample prev_samples[MAX_PROCS];
+static int prev_count = 0;
 static unsigned long long prev_total_jiffies = 0;
-static long               num_cores = 1;
+static long num_cores = 1;
 
-static int read_proc_stat(int pid, char *name, size_t name_sz,
-                          unsigned long long *cpu_jiffies)
+static int read_proc_stat(int pid, char *name, size_t name_sz, unsigned long long *cpu_jiffies)
 {
     char path[64];
     snprintf(path, sizeof path, "/proc/%d/stat", pid);
